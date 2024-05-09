@@ -170,7 +170,9 @@ let rec compileExp  (e      : TypedExp)
                            instruction sequence for any value n *)
   | Constant (BoolVal p, _) ->
       (* TODO project task 1: represent `true`/`false` values as `1`/`0` *)
-      failwith "Unimplemented code generation for boolean constants"
+      match p with
+        | true -> [LI (place, 1)]
+        | false -> [LI (place, 0)]
   | Constant (CharVal c, pos) ->
       [ LI (place, int c) ]
 
