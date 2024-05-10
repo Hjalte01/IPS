@@ -1,0 +1,7 @@
+fun int main() = 
+    let x0 = write(1 == ~1) in
+    let x1 = write(~1 == ~1) in
+    let x2 = write(~~1 == 1) in
+    let x3 = write(~1 == ~~1) in
+    let x4 = write(~1 == 0-1) in
+    1

@@ -255,8 +255,11 @@ let rec compileExp  (e      : TypedExp)
   | Not (_, _) ->
       failwith "Unimplemented code generation of not"
 
-  | Negate (_, _) ->
-      failwith "Unimplemented code generation of negate"
+  | Negate (e1, pos) ->
+      let t1 = newReg "negate" 
+      let code1 = compileExp e1 vtable t1
+      code1 @ [SUB (place, Rzero, t1)]
+
 
   | Let (dec, e1, pos) ->
       let (code1, vtable1) = compileDec dec vtable
