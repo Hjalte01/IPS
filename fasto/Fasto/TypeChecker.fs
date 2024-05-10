@@ -142,8 +142,12 @@ and checkExp  (ftab : FunTable)
     | Or (_, _, _) ->
         failwith "Unimplemented type check of ||"
 
-    | Not (_, _) ->
-        failwith "Unimplemented type check of not"
+    | Not (e, pos) -> 
+        let (t, te) = checkExp ftab vtab e
+        if t <> Bool then
+          reportTypeWrong "argument of binary operator" Bool t  pos
+        else
+          (Bool, Not (te, pos)) 
 
     | Negate (_, _) ->
         failwith "Unimplemented type check of negate"

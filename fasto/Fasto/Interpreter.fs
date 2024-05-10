@@ -161,8 +161,11 @@ let rec evalExp (e : UntypedExp, vtab : VarTable, ftab : FunTable) : Value =
         failwith "Unimplemented interpretation of &&"
   | Or (_, _, _) ->
         failwith "Unimplemented interpretation of ||"
-  | Not(_, _) ->
-        failwith "Unimplemented interpretation of not"
+  | Not(e, pos) ->
+        let res = evalExp(e, vtab, ftab)
+        match res with
+          | BoolVal(b) -> BoolVal(not b)
+          | _ -> reportWrongType "operand of not" Bool res (expPos e)
   | Negate(_, _) ->
         failwith "Unimplemented interpretation of negate"
   | Equal(e1, e2, pos) ->
