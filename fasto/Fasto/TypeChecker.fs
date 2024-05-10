@@ -132,8 +132,9 @@ and checkExp  (ftab : FunTable)
     | Times (e1, e2, pos) ->
         failwith "Unimplemented type check of multiplication"
 
-    | Divide (_, _, _) ->
-        failwith "Unimplemented type check of division"
+    | Divide (e1, e2, pos) ->
+        let (d1, d2) = checkBinOp ftab vtab (pos, Int, e1, e2)
+        (Int, Divide (d1, d2, pos))
 
     | And (_, _, _) ->
         failwith "Unimplemented type check of &&"
