@@ -40,6 +40,7 @@ let parse_error_rich =
 %token <int * Position> NUM
 %token <char * Position> CHARLIT
 %token <string * Position> ID STRINGLIT
+%token <bool * Position> BOOLLIT
 //keywords
 %token <Position> BOOL CHAR ELSE FN FUN IF IN INT LET THEN TRUE
 //specials
@@ -96,6 +97,7 @@ Params : Type ID COMMA Params
 
 Exp : NUM            { Constant (IntVal (fst $1), snd $1) }
     | CHARLIT        { Constant (CharVal (fst $1), snd $1) }
+    | BOOLLIT        { Constant (BoolVal (fst $1), snd $1) }
     | ID             { Var $1 }
     | STRINGLIT      { StringLit $1 }
     | LCURLY Exps RCURLY
