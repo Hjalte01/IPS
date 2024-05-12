@@ -72,6 +72,7 @@ let reportBadType (str : string)
 let reportWrongType str tp v pos = reportBadType str (ppType tp) v pos
 
 let reportNonArray str v pos = reportBadType str "an array" v pos
+let reportDivByZero pos = raise (MyError("Attempt to divide by 0", pos))
 
 (* Bind the formal parameters of a function declaration to actual parameters in
    a new vtab. *)
@@ -146,14 +147,25 @@ let rec evalExp (e : UntypedExp, vtab : VarTable, ftab : FunTable) : Value =
   *)
   | Times(_, _, _) ->
         failwith "Unimplemented interpretation of multiplication"
-  | Divide(_, _, _) ->
-        failwith "Unimplemented interpretation of division"
+  | Divide(e1, e2, pos) ->
+        let (res1, res2) = (evalExp(e1, vtab, ftab), evalExp(e2, vtab, ftab))
+        match (res1, res2) with
+            | (IntVal a, IntVal b) -> 
+              try
+                IntVal(a/b)
+              with
+                | :? DivideByZeroException -> reportDivByZero (expPos e2)  
+            | (IntVal _, _) -> reportWrongType "right operand of /" Int res2 (expPos e2)
+            | ( _, _) -> reportWrongType "left operand of /" Int res1 (expPos e1)
   | And (_, _, _) ->
         failwith "Unimplemented interpretation of &&"
   | Or (_, _, _) ->
         failwith "Unimplemented interpretation of ||"
-  | Not(_, _) ->
-        failwith "Unimplemented interpretation of not"
+  | Not(e, pos) ->
+        let res = evalExp(e, vtab, ftab)
+        match res with
+          | BoolVal(b) -> BoolVal(not b)
+          | _ -> reportWrongType "operand of not" Bool res (expPos e)
   | Negate(e1, pos) ->
         let r1 = evalExp(e1, vtab, ftab)
         match r1 with
