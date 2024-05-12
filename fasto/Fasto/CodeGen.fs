@@ -241,8 +241,12 @@ let rec compileExp  (e      : TypedExp)
      version, but remember to come back and clean it up later.
      `Not` and `Negate` are simpler; you can use `XORI` for `Not`
   *)
-  | Times (_, _, _) ->
-      failwith "Unimplemented code generation of multiplication"
+  | Times (e1, e2, _) ->
+      let t1 = newReg "mul_L"
+      let t2 = newReg "mul_R"
+      let code1 = compileExp e1 vtable t1
+      let code2 = compileExp e2 vtable t2
+      code1 @ code2 @ [MUL (place,t1,t2)]
 
   | Divide (e1, e2, _) ->
       let t1 = newReg "div_L"
@@ -251,9 +255,17 @@ let rec compileExp  (e      : TypedExp)
       let code2 = compileExp e2 vtable t2
       code1 @ code2 @ [DIV (place,t1,t2)]
 
+  | Divide (e1, e2, _) ->
+      let t1 = newReg "div_L"
+      let t2 = newReg "div_R"
+      let code1 = compileExp e1 vtable t1
+      let code2 = compileExp e2 vtable t2
+      code1 @ code2 @ [DIV (place,t1,t2)]
 
-  | Not (_, _) ->
-      failwith "Unimplemented code generation of not"
+  | Not (e, _) ->
+      let t = newReg "not"
+      let code = compileExp e vtable t
+      code @ [XORI (place, t, 1)]
 
   | Negate (e1, pos) ->
       let t1 = newReg "negate" 
