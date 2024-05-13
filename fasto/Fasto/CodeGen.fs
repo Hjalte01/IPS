@@ -356,8 +356,21 @@ let rec compileExp  (e      : TypedExp)
         in `e1 || e2` if the execution of `e1` will evaluate to `true` then
         the code of `e2` must not be executed. Similarly for `And` (&&).
   *)
-  | And (_, _, _) ->
-      failwith "Unimplemented code generation of &&"
+  | And (e1, e2, pos) ->
+      let t1 = newReg "And_L"
+      let t2 = newReg "And_R"
+      let t3 = newReg "falseReg"
+      let code1 = compileExp e1 vtable t1
+      let code2 = compileExp e2 vtable t2
+      let code3 = compileExp (Constant (IntVal 0, pos)) vtable t3
+      let falseLabel = newLab "false"
+      code1 @ code3 @
+      [ LI(place, 0);
+        BEQ(t1, t3, falseLabel)]
+      @ code2 @
+      [ BEQ(t2, t3, falseLabel);
+        LI(place,1);
+        LABEL falseLabel]
 
   | Or (_, _, _) ->
       failwith "Unimplemented code generation of ||"
