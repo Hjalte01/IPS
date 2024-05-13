@@ -1,0 +1,10 @@
+fun int write_int(int x) = write(x)
+
+fun [int] write_int_arr([int] x) = map(write_int, x)
+
+fun [int] main() =
+    let a = 1 in 
+    let b = 2; c = 3 in 
+    let b = 2; c = 3 in 
+    let d = 4+1-1; e = 10/2; f = 1+12/2-1 in
+    write_int_arr({a, b, c, d, e, f}) 
