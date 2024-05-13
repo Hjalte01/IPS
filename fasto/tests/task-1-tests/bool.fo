@@ -1,0 +1,7 @@
+fun int main() =
+    let x=write(true) in
+    let x=write(false) in
+    let x=write(true == true) in
+    let x=write(false == false) in
+    let x=write(true == false) in
+    1

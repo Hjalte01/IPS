@@ -1,0 +1,12 @@
+fun int write_bool(bool b) =
+    if b == true then write(1)
+    else write (0)
+    
+fun int main() =
+    let f = not true in
+    let t = not false in
+    let nested = not (not true) in
+    let out = write_bool(f) in
+    let out = write_bool(t) in
+    let out = write_bool(nested) in
+    0

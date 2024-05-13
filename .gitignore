@@ -1,0 +1,11 @@
+.vscode
+**/bin
+**/obj
+**/unit-tests
+**/Lexer.fs
+**/Parser.fs
+**/Parser.fsi
+**/Parser.fsyacc.output
+# all .asm files and error .out files
+**/*.asm
+**/*.out-testresult
