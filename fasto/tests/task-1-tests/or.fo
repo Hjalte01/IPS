@@ -1,0 +1,6 @@
+fun bool main() =
+    let or1 = write(true || true) in
+    let or2 = write(true || false) in
+    let or3 = write(false || true) in
+    let or4 = write(false || false) in
+    true

@@ -141,8 +141,9 @@ and checkExp  (ftab : FunTable)
         let (e1_dec, e2_dec) = checkBinOp ftab vtab (pos, Bool, e1, e2)
         (Bool, And (e1_dec, e2_dec, pos))
 
-    | Or (_, _, _) ->
-        failwith "Unimplemented type check of ||"
+    | Or (e1, e2, pos) ->
+        let (e1_dec, e2_dec) = checkBinOp ftab vtab (pos, Bool, e1, e2)
+        (Bool, Or (e1_dec, e2_dec, pos))
 
     | Not (e, pos) -> 
         let (t, te) = checkExp ftab vtab e
