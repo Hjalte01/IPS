@@ -131,4 +131,5 @@ rule Token = parse
   | '}'                   { Parser.RCURLY (getPos lexbuf) }
   | ','                   { Parser.COMMA  (getPos lexbuf) }
   | eof                   { Parser.EOF    (getPos lexbuf) }
+  | ';'                   { Parser.SEMICOLON (getPos lexbuf) }
   | _                     { lexerError lexbuf "Illegal symbol in input" }
