@@ -583,8 +583,60 @@ let rec compileExp  (e      : TypedExp)
         If `n` is less than `0` then remember to terminate the program with
         an error -- see implementation of `iota`.
   *)
-  | Replicate (_, _, _, _) ->
-      failwith "Unimplemented code generation of replicate"
+  | Replicate (n_exp, c_exp, c_type, pos) ->
+      let n_reg = newReg "n"
+      let c_reg = newReg "c"
+      let elem_reg = newReg "elem"
+      let res_reg = newReg "res" 
+      let n_code = compileExp n_exp vtable n_reg
+      let c_code = compileExp c_exp vtable c_reg
+
+      let safe_lab = newLab "safe"
+      let size_safe = [
+        BGE (n_reg, Rzero, safe_lab);
+        LI (Ra0, fst pos);
+        LA (Ra1, "m.BadSize");
+        J "p.RuntimeError";
+        LABEL (safe_lab);
+      ]
+
+      let addr_reg = newReg "addr"
+      let i_reg = newReg "i"
+      let init_regs = [
+        // LW (n_reg, n_reg, 0)  I dont think this is needed
+        ADDI (addr_reg, place, 4);
+        MV (i_reg, Rzero); 
+      ]
+
+      let loop_start = newLab "loop_start"
+      let loop_end = newLab "loop_end"
+      let elem_size = getElemSize c_type
+      let loop_header = [ 
+        LABEL (loop_start); 
+        BGE (i_reg, n_reg, loop_end);
+      ]
+      let loop_body = [
+        // Load elem_size (res_reg, elem_reg, 0); I dont think this is needed.
+        ADDI (elem_reg, elem_reg, elemSizeToInt elem_size);
+        Store elem_size (c_reg, addr_reg, 0);
+        ADDI (addr_reg, addr_reg, elemSizeToInt elem_size);
+      ]
+      let loop_footer =[ 
+        ADDI (i_reg, i_reg, 1);
+        J loop_start;
+        LABEL loop_end;
+      ]
+
+      n_code
+        @ c_code
+        @ size_safe
+        @ dynalloc (n_reg, place, c_type)
+        @ init_regs
+        @ loop_header
+        @ loop_body
+        @ loop_footer
+
+      // failwith "Unimplemented code generation of replicate"
 
   (* TODO project task 2: see also the comment to replicate.
      (a) `filter(f, arr)`:  has some similarity with the implementation of map.

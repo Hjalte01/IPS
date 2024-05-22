@@ -288,8 +288,18 @@ let rec evalExp (e : UntypedExp, vtab : VarTable, ftab : FunTable) : Value =
          the value of `a`; otherwise raise an error (containing
          a meaningful message).
   *)
-  | Replicate (_, _, _, _) ->
-        failwith "Unimplemented interpretation of replicate"
+  | Replicate (n_exp, exp, _, pos) ->
+        let n_val = evalExp(n_exp, vtab, ftab)
+
+        match n_val with
+          | IntVal(n) -> 
+              if n < 0 then
+                raise (MyError("1st argument of \"scan\"", pos))
+              ArrayVal(
+                [for _ in 0..(n-1) -> evalExp(exp, vtab, ftab)], 
+                valueType(evalExp(exp, vtab, ftab)))
+          | _ -> reportWrongType "1st argument of \"scan\"" Int n_val (expPos n_exp)
+
 
   (* TODO project task 2: `filter(p, arr)`
        pattern match the implementation of map:
