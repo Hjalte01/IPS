@@ -46,8 +46,6 @@ let parse_error_rich =
 //specials
 %token <Position> IOTA LENGTH MAP READ REDUCE WRITE
 //symbols
-
-%token <Position> MINUS PLUS DEQ LTH DIVIDE
 %token <Position> MINUS PLUS DEQ LTH DIVIDE TIMES
 %token <Position> COMMA SEMICOLON EQ NEGATION ARROW LPAR RPAR LBRACKET RBRACKET
 %token <Position> LCURLY RCURLY EOF
@@ -56,7 +54,6 @@ let parse_error_rich =
 %left DEQ LTH
 %left AND OR
 %left PLUS MINUS
-%left DIVIDE
 %left DIVIDE TIMES
 %left NEGATION
 %nonassoc NOT
