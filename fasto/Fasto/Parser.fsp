@@ -42,7 +42,7 @@ let parse_error_rich =
 %token <string * Position> ID STRINGLIT
 %token <bool * Position> BOOLLIT
 //keywords
-%token <Position> BOOL CHAR ELSE FN FUN IF IN INT LET THEN TRUE NOT
+%token <Position> BOOL CHAR ELSE FN FUN IF IN INT LET THEN TRUE NOT AND OR
 //specials
 %token <Position> IOTA LENGTH MAP READ REDUCE WRITE
 //symbols
@@ -54,6 +54,7 @@ let parse_error_rich =
 
 %nonassoc ELSE IN SEMICOLON
 %left DEQ LTH
+%left AND OR
 %left PLUS MINUS
 %left DIVIDE
 %left DIVIDE TIMES
@@ -122,6 +123,8 @@ Exp : NUM            { Constant (IntVal (fst $1), snd $1) }
     | Exp TIMES Exp  { Times($1, $3, $2)}
     | Exp DEQ   Exp  { Equal($1, $3, $2) }
     | Exp LTH   Exp  { Less ($1, $3, $2) }
+    | Exp AND  Exp   { And ($1, $3, $2) }
+    | Exp OR    Exp  { Or ($1, $3, $2) }
     | NEGATION Exp   { Negate ($2, $1) }
     | IF Exp THEN Exp ELSE Exp
                      { If ($2, $4, $6, $1) }
@@ -142,6 +145,8 @@ Exp : NUM            { Constant (IntVal (fst $1), snd $1) }
     // TODO: task 1(b): replace this with a more general production
     | LET LetDecs IN Exp
                      { (List.foldBack (fun dec body -> Let(dec, body, $1)) $2 $4) }
+    | LET ID EQ Exp IN Exp
+                        { Let (Dec (fst $2, $4, $3), $6, $1) }    
     | NOT Exp        { Not ($2, $1) }
     | ID LBRACKET Exp RBRACKET
                      { Index (fst $1, $3, (), $2) }
