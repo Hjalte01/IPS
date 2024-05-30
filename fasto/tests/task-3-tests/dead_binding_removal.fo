@@ -1,0 +1,4 @@
+fun int main() =
+    let z = 2 in
+    let z = z*3 in
+    let x = 2+1 in write(x*z)
