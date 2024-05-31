@@ -145,7 +145,7 @@ and checkExp  (ftab : FunTable)
     | Not (e, pos) -> 
         let (t, te) = checkExp ftab vtab e
         if t <> Bool then
-          reportTypeWrong "argument of binary operator" Bool t  pos
+          reportTypeWrong "argument of unary operator" Bool t  pos
         else
           (Bool, Not (te, pos)) 
 

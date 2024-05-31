@@ -1,0 +1,1 @@
+Type error: Type mismatch in argument of binary operator: expected bool, but got char at line 2, column 11
