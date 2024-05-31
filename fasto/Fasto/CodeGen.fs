@@ -653,8 +653,59 @@ let rec compileExp  (e      : TypedExp)
          counter computed in step (c). You do this of course with a
          `SW(counter_reg, place, 0)` instruction.
   *)
-  | Filter (_, _, _, _) ->
-      failwith "Unimplemented code generation of filter"
+  | Filter (farg, arr_exp, tp, pos) ->
+      let size_reg      = newReg "size_reg"
+      let arr_reg       = newReg "arr_reg"
+      let elem_reg      = newReg "elem_reg"
+      let res_reg       = newReg "res_reg"
+      let addr_reg      = newReg "addr_reg"
+      let i_reg         = newReg "i_reg"
+      let arrh_reg      = newReg "arrh_reg"
+      let counter_reg   = newReg "counter_reg"
+      let tmp_reg       = newReg "tmp_reg"
+
+      let arr_code      = compileExp arr_exp vtable arr_reg
+
+      let get_size      =   [ LW (size_reg, arr_reg, 0);  ]
+      let init_regs     =   [ ADDI (addr_reg, place, 4);
+                              ADDI (arrh_reg, place, 0);
+                              MV (i_reg, Rzero);
+                              MV (counter_reg, Rzero);
+                              ADDI (elem_reg, arr_reg, 4) ]
+
+      let loop_beg      = newLab "loop_beg"
+      let loop_end      = newLab "loop_end"
+      let check_wrong   = newLab "check_wrong"
+      let tmp_reg       = newReg "tmp_reg"
+
+      let loop_header   = [ LABEL (loop_beg);
+                            SUB (tmp_reg, i_reg, size_reg);
+                            BGE (tmp_reg, i_reg, loop_end)  ] 
+
+      let elem_size     = getElemSize tp
+
+      let loop_body     = [ Load elem_size (res_reg, elem_reg, 0);
+                           ADDI (elem_reg, elem_reg, elemSizeToInt elem_size) ]
+                          @ applyFunArg (farg, [res_reg], vtable, tmp_reg, pos) @
+                          [ BEQ (tmp_reg, Rzero, check_wrong);
+                            Store elem_size (res_reg, addr_reg, 0);
+                            ADDI (addr_reg, addr_reg, elemSizeToInt elem_size)
+                            ADDI (counter_reg, counter_reg, 1)  ]
+
+      let loop_footer   = [ LABEL (check_wrong);
+                            ADDI (i_reg, i_reg, 1);
+                            J loop_beg;
+                            LABEL (loop_end);
+                            SW (counter_reg, arrh_reg, 0)  ]
+
+      arr_code
+        @ get_size
+        @ dynalloc (size_reg, place, tp)
+        @ init_regs
+        @ loop_header
+        @ loop_body
+        @ loop_footer       
+
 
   (* TODO project task 2: see also the comment to replicate.
      `scan(f, ne, arr)`: you can inspire yourself from the implementation of
