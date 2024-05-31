@@ -241,8 +241,12 @@ let rec compileExp  (e      : TypedExp)
      version, but remember to come back and clean it up later.
      `Not` and `Negate` are simpler; you can use `XORI` for `Not`
   *)
-  | Times (_, _, _) ->
-      failwith "Unimplemented code generation of multiplication"
+  | Times (e1, e2, _) ->
+      let t1 = newReg "mul_L"
+      let t2 = newReg "mul_R"
+      let code1 = compileExp e1 vtable t1
+      let code2 = compileExp e2 vtable t2
+      code1 @ code2 @ [MUL (place,t1,t2)]
 
   | Divide (e1, e2, _) ->
       let t1 = newReg "div_L"
@@ -257,8 +261,11 @@ let rec compileExp  (e      : TypedExp)
       let code = compileExp e vtable t
       code @ [XORI (place, t, 1)]
 
-  | Negate (_, _) ->
-      failwith "Unimplemented code generation of negate"
+  | Negate (e1, pos) ->
+      let t1 = newReg "negate" 
+      let code1 = compileExp e1 vtable t1
+      code1 @ [SUB (place, Rzero, t1)]
+
 
   | Let (dec, e1, pos) ->
       let (code1, vtable1) = compileDec dec vtable
@@ -349,12 +356,37 @@ let rec compileExp  (e      : TypedExp)
         in `e1 || e2` if the execution of `e1` will evaluate to `true` then
         the code of `e2` must not be executed. Similarly for `And` (&&).
   *)
-  | And (_, _, _) ->
-      failwith "Unimplemented code generation of &&"
+  | And (e1, e2, pos) ->
+      let t1 = newReg "And_L"
+      let t2 = newReg "And_R"
+      let t3 = newReg "falseReg"
+      let code1 = compileExp e1 vtable t1
+      let code2 = compileExp e2 vtable t2
+      let code3 = compileExp (Constant (IntVal 0, pos)) vtable t3
+      let falseLabel = newLab "false"
+      code1 @ code3 @
+      [ LI(place, 0);
+        BEQ(t1, t3, falseLabel)]
+      @ code2 @
+      [ BEQ(t2, t3, falseLabel);
+        LI(place,1);
+        LABEL falseLabel]
 
-  | Or (_, _, _) ->
-      failwith "Unimplemented code generation of ||"
-
+  | Or (e1, e2, pos) ->
+      let t1 = newReg "Or_L"
+      let t2 = newReg "Or_R"
+      let t3 = newReg "trueReg"
+      let code1 = compileExp e1 vtable t1
+      let code2 = compileExp e2 vtable t2
+      let code3 = compileExp (Constant (IntVal 1, pos)) vtable t3
+      let trueLabel = newLab "true"
+      code1 @ code3 @
+      [ LI(place, 1);
+        BEQ(t1, t3, trueLabel) ]
+      @ code2 @
+      [ BEQ(t2, t3, trueLabel);
+        LI(place, 0);
+        LABEL trueLabel ]
   (* Indexing:
      1. generate code to compute the index
      2. check index within bounds
@@ -551,8 +583,60 @@ let rec compileExp  (e      : TypedExp)
         If `n` is less than `0` then remember to terminate the program with
         an error -- see implementation of `iota`.
   *)
-  | Replicate (_, _, _, _) ->
-      failwith "Unimplemented code generation of replicate"
+  | Replicate (n_exp, c_exp, c_type, pos) ->
+      let n_reg = newReg "n"
+      let c_reg = newReg "c"
+      let elem_reg = newReg "elem"
+      let res_reg = newReg "res" 
+      let n_code = compileExp n_exp vtable n_reg
+      let c_code = compileExp c_exp vtable c_reg
+
+      let safe_lab = newLab "safe"
+      let size_safe = [
+        BGE (n_reg, Rzero, safe_lab);
+        LI (Ra0, fst pos);
+        LA (Ra1, "m.BadSize");
+        J "p.RuntimeError";
+        LABEL (safe_lab);
+      ]
+
+      let addr_reg = newReg "addr"
+      let i_reg = newReg "i"
+      let init_regs = [
+        // LW (n_reg, n_reg, 0)  I dont think this is needed
+        ADDI (addr_reg, place, 4);
+        MV (i_reg, Rzero); 
+      ]
+
+      let loop_start = newLab "loop_start"
+      let loop_end = newLab "loop_end"
+      let elem_size = getElemSize c_type
+      let loop_header = [ 
+        LABEL (loop_start); 
+        BGE (i_reg, n_reg, loop_end);
+      ]
+      let loop_body = [
+        // Load elem_size (res_reg, elem_reg, 0); I dont think this is needed.
+        ADDI (elem_reg, elem_reg, elemSizeToInt elem_size);
+        Store elem_size (c_reg, addr_reg, 0);
+        ADDI (addr_reg, addr_reg, elemSizeToInt elem_size);
+      ]
+      let loop_footer =[ 
+        ADDI (i_reg, i_reg, 1);
+        J loop_start;
+        LABEL loop_end;
+      ]
+
+      n_code
+        @ c_code
+        @ size_safe
+        @ dynalloc (n_reg, place, c_type)
+        @ init_regs
+        @ loop_header
+        @ loop_body
+        @ loop_footer
+
+      // failwith "Unimplemented code generation of replicate"
 
   (* TODO project task 2: see also the comment to replicate.
      (a) `filter(f, arr)`:  has some similarity with the implementation of map.

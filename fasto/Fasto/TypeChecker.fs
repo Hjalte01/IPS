@@ -130,17 +130,20 @@ and checkExp  (ftab : FunTable)
         See `AbSyn.fs` for the expression constructors of `Times`, ...
     *)
     | Times (e1, e2, pos) ->
-        failwith "Unimplemented type check of multiplication"
+        let (e1_dec, e2_dec) = checkBinOp ftab vtab (pos, Int, e1, e2)
+        (Int, Times (e1_dec, e2_dec, pos))
 
     | Divide (e1, e2, pos) ->
         let (d1, d2) = checkBinOp ftab vtab (pos, Int, e1, e2)
         (Int, Divide (d1, d2, pos))
 
-    | And (_, _, _) ->
-        failwith "Unimplemented type check of &&"
+    | And (e1, e2, pos) ->
+        let (e1_dec, e2_dec) = checkBinOp ftab vtab (pos, Bool, e1, e2)
+        (Bool, And (e1_dec, e2_dec, pos))
 
-    | Or (_, _, _) ->
-        failwith "Unimplemented type check of ||"
+    | Or (e1, e2, pos) ->
+        let (e1_dec, e2_dec) = checkBinOp ftab vtab (pos, Bool, e1, e2)
+        (Bool, Or (e1_dec, e2_dec, pos))
 
     | Not (e, pos) -> 
         let (t, te) = checkExp ftab vtab e
@@ -149,8 +152,11 @@ and checkExp  (ftab : FunTable)
         else
           (Bool, Not (te, pos)) 
 
-    | Negate (_, _) ->
-        failwith "Unimplemented type check of negate"
+    | Negate (e1, pos) ->
+        let (t1, e1') = checkExp ftab vtab e1
+        match t1 with
+          | Int -> (Int, Negate (e1', pos))
+          | _ -> reportTypeWrong "argument of negate" Int t1 pos
 
     (* The types for e1, e2 must be the same. The result is always a Bool. *)
     | Equal (e1, e2, pos) ->
@@ -297,8 +303,15 @@ and checkExp  (ftab : FunTable)
         - assuming `a` is of type `t` the result type
           of replicate is `[t]`
     *)
-    | Replicate (_, _, _, _) ->
-        failwith "Unimplemented type check of replicate"
+    | Replicate (n_exp, exp, _, pos) ->
+        let (n_type, n_dec) = checkExp ftab vtab n_exp
+        let (exp_type, exp_dec) = checkExp ftab vtab exp
+
+        if n_type <> Int then
+          reportTypeWrong "1st argument of scan" Int n_type pos
+        (Array exp_type, Replicate(n_dec, exp_dec, exp_type, pos))
+
+   
 
     (* TODO project task 2: Hint for `filter(f, arr)`
         Look into the type-checking lecture slides for the type rule of `map`

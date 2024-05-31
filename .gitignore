@@ -6,5 +6,6 @@
 **/Parser.fs
 **/Parser.fsi
 **/Parser.fsyacc.output
+# all .asm files and error .out files
 **/*.asm
 **/*.out-testresult

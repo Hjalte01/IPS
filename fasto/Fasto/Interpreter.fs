@@ -145,8 +145,12 @@ let rec evalExp (e : UntypedExp, vtab : VarTable, ftab : FunTable) : Value =
         e.g., `And (e1, e2, pos)` should not evaluate `e2` if `e1` already
               evaluates to false.
   *)
-  | Times(_, _, _) ->
-        failwith "Unimplemented interpretation of multiplication"
+  | Times(e1, e2, pos) ->
+        let (res1, res2) = (evalExp(e1, vtab, ftab), evalExp(e2, vtab, ftab))
+        match (res1, res2) with
+          | (IntVal n1, IntVal n2) -> IntVal (n1*n2)
+          | (IntVal _, _) -> reportWrongType "right operand of *" Int res2 (expPos e2)
+          | (_, _) -> reportWrongType "left operand of *" Int res1 (expPos e1)
   | Divide(e1, e2, pos) ->
         let (res1, res2) = (evalExp(e1, vtab, ftab), evalExp(e2, vtab, ftab))
         match (res1, res2) with
@@ -157,17 +161,47 @@ let rec evalExp (e : UntypedExp, vtab : VarTable, ftab : FunTable) : Value =
                 | :? DivideByZeroException -> reportDivByZero (expPos e2)  
             | (IntVal _, _) -> reportWrongType "right operand of /" Int res2 (expPos e2)
             | ( _, _) -> reportWrongType "left operand of /" Int res1 (expPos e1)
-  | And (_, _, _) ->
-        failwith "Unimplemented interpretation of &&"
-  | Or (_, _, _) ->
-        failwith "Unimplemented interpretation of ||"
+  | And (e1, e2, pos) ->
+        let res1 = evalExp(e1, vtab, ftab)
+        match res1 with
+          | BoolVal b1 ->
+            match b1 with
+              | true ->
+                let res2 = evalExp(e2, vtab, ftab)
+                match res2 with
+                  | BoolVal b2 ->
+                    match b2 with
+                      | true -> BoolVal true
+                      | _ -> BoolVal false
+                  | _ -> reportWrongType "right operand of &&" Bool res2 (expPos e2)
+              | _ -> BoolVal false
+          | _ -> reportWrongType "left operand of &&" Bool res1 (expPos e1) 
+            
+  | Or (e1, e2, pos) ->
+        let res1 = evalExp(e1, vtab, ftab)
+        match res1 with
+          | BoolVal b1 ->
+            match b1 with
+              | false ->
+                let res2 = evalExp(e2, vtab, ftab)
+                match res2 with
+                  | BoolVal b2 ->
+                    match b2 with
+                      | true -> BoolVal true
+                      | _ -> BoolVal false
+                  | _ -> reportWrongType "right operand of ||" Bool res2 (expPos e2)
+              | _ -> BoolVal true
+          | _ -> reportWrongType "left operand of ||" Bool res1  (expPos e1)
   | Not(e, pos) ->
         let res = evalExp(e, vtab, ftab)
         match res with
           | BoolVal(b) -> BoolVal(not b)
           | _ -> reportWrongType "operand of not" Bool res (expPos e)
-  | Negate(_, _) ->
-        failwith "Unimplemented interpretation of negate"
+  | Negate(e1, pos) ->
+        let r1 = evalExp(e1, vtab, ftab)
+        match r1 with
+          | IntVal n -> IntVal (-n)
+          | _ -> reportWrongType "operand of negate" Int r1 pos
   | Equal(e1, e2, pos) ->
         let r1 = evalExp(e1, vtab, ftab)
         let r2 = evalExp(e2, vtab, ftab)
@@ -254,8 +288,18 @@ let rec evalExp (e : UntypedExp, vtab : VarTable, ftab : FunTable) : Value =
          the value of `a`; otherwise raise an error (containing
          a meaningful message).
   *)
-  | Replicate (_, _, _, _) ->
-        failwith "Unimplemented interpretation of replicate"
+  | Replicate (n_exp, exp, _, pos) ->
+        let n_val = evalExp(n_exp, vtab, ftab)
+
+        match n_val with
+          | IntVal(n) -> 
+              if n < 0 then
+                raise (MyError("1st argument of \"scan\"", pos))
+              ArrayVal(
+                [for _ in 0..(n-1) -> evalExp(exp, vtab, ftab)], 
+                valueType(evalExp(exp, vtab, ftab)))
+          | _ -> reportWrongType "1st argument of \"scan\"" Int n_val (expPos n_exp)
+
 
   (* TODO project task 2: `filter(p, arr)`
        pattern match the implementation of map:

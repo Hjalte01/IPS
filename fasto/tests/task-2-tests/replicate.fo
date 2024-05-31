@@ -1,0 +1,20 @@
+fun [char] write_str([char] x) = write(x)
+fun [[char]] write_str_arr([[char]] xs) = map(write_str, xs) 
+
+fun char write_char(char x) = write(x)
+fun [char] write_char_arr([char] xs) = map(write_char, xs) 
+
+fun bool write_bool(bool x) = write(x)
+fun [bool] write_bool_arr([bool] xs) = map(write_bool, xs)
+
+fun int write_int(int x) = write(x)
+fun [int] write_int_arr([int] xs) = map(write_int, xs)
+fun [[int]] write_arr([[int]] xs) = map(write_int_arr, xs)
+
+fun int main() =
+    let is = write_int_arr(replicate(5, 1)) in
+    let bs = write_bool_arr(replicate(5, true)) in
+    let cs = write_char_arr(replicate(5, 'c')) in
+    let ss = write_str_arr(replicate(5, "foo")) in
+    let as = write_arr(replicate(5, {2})) in
+    0
