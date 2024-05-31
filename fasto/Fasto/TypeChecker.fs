@@ -135,7 +135,13 @@ and checkExp  (ftab : FunTable)
 
     | Divide (e1, e2, pos) ->
         let (d1, d2) = checkBinOp ftab vtab (pos, Int, e1, e2)
-        (Int, Divide (d1, d2, pos))
+        match d2 with
+          | Constant(IntVal(n), _) -> 
+            if n <> 0 then
+              (Int, Divide (d1, d2, pos))
+            else
+              reportOther "Attempt to divide by 0" pos
+          | _ -> (Int, Divide (d1, d2, pos))
 
     | And (e1, e2, pos) ->
         let (e1_dec, e2_dec) = checkBinOp ftab vtab (pos, Bool, e1, e2)
