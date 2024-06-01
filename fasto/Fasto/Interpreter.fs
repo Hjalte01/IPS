@@ -294,11 +294,11 @@ let rec evalExp (e : UntypedExp, vtab : VarTable, ftab : FunTable) : Value =
         match n_val with
           | IntVal(n) -> 
               if n < 0 then
-                raise (MyError("1st argument of \"scan\"", pos))
+                raise (MyError(sprintf "Argument of \"replicate\" is negative: %i" n, pos))
               ArrayVal(
                 [for _ in 0..(n-1) -> evalExp(exp, vtab, ftab)], 
                 valueType(evalExp(exp, vtab, ftab)))
-          | _ -> reportWrongType "1st argument of \"scan\"" Int n_val (expPos n_exp)
+          | _ -> reportWrongType "1st argument of \"replicate\"" Int n_val (expPos n_exp)
 
 
   (* TODO project task 2: `filter(p, arr)`

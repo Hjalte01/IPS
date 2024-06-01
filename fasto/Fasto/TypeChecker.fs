@@ -308,7 +308,7 @@ and checkExp  (ftab : FunTable)
         let (exp_type, exp_dec) = checkExp ftab vtab exp
 
         if n_type <> Int then
-          reportTypeWrong "1st argument of scan" Int n_type pos
+          reportTypeWrong "1st argument of \"replicate\"" Int n_type pos
         (Array exp_type, Replicate(n_dec, exp_dec, exp_type, pos))
 
    
