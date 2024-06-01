@@ -689,7 +689,7 @@ let rec compileExp  (e      : TypedExp)
                           @ applyFunArg (farg, [res_reg], vtable, tmp_reg, pos) @
                           [ BEQ (tmp_reg, Rzero, check_wrong);
                             Store elem_size (res_reg, addr_reg, 0);
-                            ADDI (addr_reg, addr_reg, elemSizeToInt elem_size)
+                            ADDI (addr_reg, addr_reg, elemSizeToInt elem_size);
                             ADDI (counter_reg, counter_reg, 1)  ]
 
       let loop_footer   = [ LABEL (check_wrong);
