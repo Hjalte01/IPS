@@ -61,14 +61,15 @@ let rec removeDeadBindingsInExp (e : TypedExp) : (bool * DBRtab * TypedExp) =
              List.fold SymTab.combine (SymTab.empty()) uses,
              ArrayLit (es', t, pos) )
         (* ToDO: Task 3: implement the cases of `Var`, `Index` and `Let` expressions below *)
-        | Var (name, pos) ->
+        | Var (name, pos) -> 
             (* Task 3, Hints for the `Var` case:
                   - 1st element of result tuple: can a variable name contain IO?
                   - 2nd element of result tuple: you have discovered a name, hence
                         you need to record it in a new symbol table.
                   - 3rd element of the tuple: should be the optimised expression.
             *)
-            failwith "Unimplemented removeDeadBindingsInExp for Var"
+            (false, recordUse name (SymTab.empty()), Var (name, pos))
+            // failwith "Unimplemented removeDeadBindingsInExp for Var"
         | Plus (x, y, pos) ->
             let (xios, xuses, x') = removeDeadBindingsInExp x
             let (yios, yuses, y') = removeDeadBindingsInExp y
@@ -118,7 +119,9 @@ let rec removeDeadBindingsInExp (e : TypedExp) : (bool * DBRtab * TypedExp) =
                         expression `e` and to propagate its results (in addition
                         to recording the use of `name`).
             *)
-            failwith "Unimplemented removeDeadBindingsInExp for Index"
+            let (ios, uses, exp') = removeDeadBindingsInExp e
+            (false || ios, SymTab.combine (recordUse name (SymTab.empty())) uses, Index(name, exp', t, pos))
+            // failwith "Unimplemented removeDeadBindingsInExp for Index"
 
         | Let (Dec (name, e, decpos), body, pos) ->
             (* Task 3, Hints for the `Let` case:
@@ -144,7 +147,17 @@ let rec removeDeadBindingsInExp (e : TypedExp) : (bool * DBRtab * TypedExp) =
                     Let-expression.
 
             *)
-            failwith "Unimplemented removeDeadBindingsInExp for Let"
+            let (ios1, uses1, exp1) = removeDeadBindingsInExp body
+            let (ios2, uses2, exp2) = removeDeadBindingsInExp e
+            if (isUsed name uses1 && isUsed name uses2) || ios2 then
+                (ios2 || ios1, 
+                SymTab.combine (SymTab.remove name uses1) uses2, 
+                Let(Dec(name, exp2, decpos), exp1, pos))
+            else
+                let (ios1, uses1, exp1) = removeDeadBindingsInExp body
+
+                (ios1, uses1, exp1)
+                // failwith "Unimplemented removeDeadBindingsInExp for Let"
         | Iota (e, pos) ->
             let (io, uses, e') = removeDeadBindingsInExp e
             (io,

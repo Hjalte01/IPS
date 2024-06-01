@@ -161,10 +161,37 @@ let rec evalExp (e : UntypedExp, vtab : VarTable, ftab : FunTable) : Value =
                 | :? DivideByZeroException -> reportDivByZero (expPos e2)  
             | (IntVal _, _) -> reportWrongType "right operand of /" Int res2 (expPos e2)
             | ( _, _) -> reportWrongType "left operand of /" Int res1 (expPos e1)
-  | And (_, _, _) ->
-        failwith "Unimplemented interpretation of &&"
-  | Or (_, _, _) ->
-        failwith "Unimplemented interpretation of ||"
+  | And (e1, e2, pos) ->
+        let res1 = evalExp(e1, vtab, ftab)
+        match res1 with
+          | BoolVal b1 ->
+            match b1 with
+              | true ->
+                let res2 = evalExp(e2, vtab, ftab)
+                match res2 with
+                  | BoolVal b2 ->
+                    match b2 with
+                      | true -> BoolVal true
+                      | _ -> BoolVal false
+                  | _ -> reportWrongType "right operand of &&" Bool res2 (expPos e2)
+              | _ -> BoolVal false
+          | _ -> reportWrongType "left operand of &&" Bool res1 (expPos e1) 
+            
+  | Or (e1, e2, pos) ->
+        let res1 = evalExp(e1, vtab, ftab)
+        match res1 with
+          | BoolVal b1 ->
+            match b1 with
+              | false ->
+                let res2 = evalExp(e2, vtab, ftab)
+                match res2 with
+                  | BoolVal b2 ->
+                    match b2 with
+                      | true -> BoolVal true
+                      | _ -> BoolVal false
+                  | _ -> reportWrongType "right operand of ||" Bool res2 (expPos e2)
+              | _ -> BoolVal true
+          | _ -> reportWrongType "left operand of ||" Bool res1  (expPos e1)
   | Not(e, pos) ->
         let res = evalExp(e, vtab, ftab)
         match res with
