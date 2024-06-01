@@ -663,6 +663,7 @@ let rec compileExp  (e      : TypedExp)
       let arrh_reg      = newReg "arrh_reg"
       let counter_reg   = newReg "counter_reg"
       let tmp_reg       = newReg "tmp_reg"
+      let tmp_reg2      = newReg "tmp_reg2"
 
       let arr_code      = compileExp arr_exp vtable arr_reg
 
@@ -676,18 +677,17 @@ let rec compileExp  (e      : TypedExp)
       let loop_beg      = newLab "loop_beg"
       let loop_end      = newLab "loop_end"
       let check_wrong   = newLab "check_wrong"
-      let tmp_reg       = newReg "tmp_reg"
 
       let loop_header   = [ LABEL (loop_beg);
                             SUB (tmp_reg, i_reg, size_reg);
-                            BGE (tmp_reg, i_reg, loop_end)  ] 
+                            BGE (tmp_reg, Rzero, loop_end)  ] 
 
       let elem_size     = getElemSize tp
 
       let loop_body     = [ Load elem_size (res_reg, elem_reg, 0);
                            ADDI (elem_reg, elem_reg, elemSizeToInt elem_size) ]
-                          @ applyFunArg (farg, [res_reg], vtable, tmp_reg, pos) @
-                          [ BEQ (tmp_reg, Rzero, check_wrong);
+                          @ applyFunArg (farg, [res_reg], vtable, tmp_reg2, pos) @
+                          [ BEQ (tmp_reg2, Rzero, check_wrong);
                             Store elem_size (res_reg, addr_reg, 0);
                             ADDI (addr_reg, addr_reg, elemSizeToInt elem_size);
                             ADDI (counter_reg, counter_reg, 1)  ]

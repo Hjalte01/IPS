@@ -322,7 +322,7 @@ let rec evalExp (e : UntypedExp, vtab : VarTable, ftab : FunTable) : Value =
                                                 | _ -> reportWrongType "Expected boolean return type from the function argument used in 'filter'" Bool arr pos ) lst
                 ArrayVal (mlst, tp)
               | _ -> reportNonArray "The function used as second argument in 'filter' must be an array" arr pos
-          | _ -> reportWrongType "The function used as first argument in 'filter' must return bool" Int arr pos
+          | _ -> reportWrongType "The function used as first argument in 'filter' must return bool" Bool arr pos
 
   (* TODO project task 2: `scan(f, ne, arr)`
      Implementation similar to reduce, except that it produces an array
