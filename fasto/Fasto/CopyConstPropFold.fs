@@ -32,15 +32,16 @@ let rec copyConstPropFoldExp (vtable : VarTable)
                 | Some (ConstProp x)    -> Constant(x, pos)
                 | Some (VarProp y)      -> Var (y, pos)
                 | _                     -> Var (name, pos)
-        | Index (name, ei, t, pos)      
+        | Index (name, ei, t, pos) ->
             (* TODO project task 3:
                 Should probably do the same as the `Var` case, for
                 the array name, and optimize the index expression `ei` as well.
             *)
-            | let ei' = copyConstPropFoldExp vtable e
+            let ei' = copyConstPropFoldExp vtable ei in
             match SymTab.lookup name vtable with
-                | Some (VarProp y)      -> Index(y, ei', t, pos)
-                | _                     -> Index(name, ei', t, pos)
+                | Some (VarProp y) -> Index(y, ei', t, pos)
+                | _ -> Index(name, ei', t, pos)
+                
         | Let (Dec (name, ed, decpos), body, pos) ->
             let ed' = copyConstPropFoldExp vtable ed
             match ed' with
@@ -73,12 +74,12 @@ let rec copyConstPropFoldExp (vtable : VarTable)
                                 `let x = e1 in let y = e2 in e3`
                     *)
                     copyConstPropFoldExp vtable (Let (Dec (name2, e2, decpos),
-                                                        Let (Dec (name, inner_body, decpos2)
-                                                        body,
-                                                        pos2),
-                                                        pos))
+                                                     Let (Dec (name, inner_body, decpos2),
+                                                          body,
+                                                          pos2),
+                                                     pos))
                 | _ -> (* Fallthrough - for everything else, do nothing *)
-                    let body' = copyConstPropFoldExp vtable body
+                    let body' = copyConstPropFoldExp vtable body in
                     Let (Dec (name, ed', decpos), body', pos)
 
         | Times (e1, e2, pos) ->
@@ -97,7 +98,7 @@ let rec copyConstPropFoldExp (vtable : VarTable)
                 | (Constant (IntVal 1, _), _)                           -> e2'
                 | (_, Constant (IntVal 1, _))                           -> e1'
                 | (Constant (IntVal -1, _), _)                          -> Negate (e2', pos)
-                | (_, Constant (IntVal -1, _), _)                       -> Negate (e1', pos)
+                | (_, Constant (IntVal -1, _))                          -> Negate (e1', pos)
                 | _                                                     -> Times (e1', e2', pos)
         | And (e1, e2, pos) ->
             (* TODO project task 3: see above. You may inspire yourself from
