@@ -336,8 +336,9 @@ and checkExp  (ftab : FunTable)
         if elem_type <> f_arg_type then
           reportTypesDifferent "The type of array elements does not match the expected for 'filter'" f_arg_type elem_type pos
         if f_res_type <> Bool then 
-          reportTypeWrongKind "1st argument type of function in 'filter' must be bool" f_res_type pos
+          reportTypeWrongKind "1st argument type of function in 'filter' must be bool" "bool" f_res_type pos
         (Array elem_type, Filter (f', arr_exp_dec, elem_type, pos))
+
 
 
     (* TODO project task 2: `scan(f, ne, arr)`
