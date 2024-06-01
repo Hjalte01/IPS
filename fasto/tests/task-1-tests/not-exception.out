@@ -1,0 +1,1 @@
+Interpreter error: Bad type for operand of not: expected bool, but got char ('a') at line 2, column 15
