@@ -1,1 +1,1 @@
-Type error: Type mismatch in 1st argument of scan: expected int, but got char at line 2, column 14
+Runtime error at line 5: negative array size

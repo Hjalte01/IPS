@@ -1,6 +1,3 @@
 fun int main() =
-    //let is = replicate('1', 1) in
-    //let nums = iota(2) in
-    //let m = map(fn char (char c) => c, 1) in
-    let n = iota(0-1) in
+    let n = replicate(~1) in
     0

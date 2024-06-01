@@ -267,7 +267,7 @@ let rec evalExp (e : UntypedExp, vtab : VarTable, ftab : FunTable) : Value =
         match n_val with
           | IntVal(n) -> 
               if n < 0 then
-                raise (MyError(sprintf "Bad value for 1st argument of \"replicate\": %d" n, pos))
+                raise (MyError(sprintf "Argument of \"replicate\" is negative: %i" n, pos))
               ArrayVal(
                 [for _ in 0..(n-1) -> evalExp(exp, vtab, ftab)], 
                 valueType(evalExp(exp, vtab, ftab)))
