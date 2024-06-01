@@ -1,1 +1,1 @@
-Runtime error at line 5: negative array size
+Type error: Type mismatch in 1st argument of "replicate": expected int, but got char at line 2, column 15
