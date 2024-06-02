@@ -44,7 +44,8 @@ let parse_error_rich =
 //keywords
 %token <Position> BOOL CHAR ELSE FN FUN IF IN INT LET THEN TRUE NOT AND OR
 //specials
-%token <Position> IOTA LENGTH MAP READ REDUCE WRITE REPLICATE SCAN
+%token <Position> IOTA LENGTH MAP READ REDUCE WRITE REPLICATE SCAN FILTER
+
 //symbols
 %token <Position> MINUS PLUS DEQ LTH DIVIDE TIMES
 %token <Position> COMMA SEMICOLON EQ NEGATION ARROW LPAR RPAR LBRACKET RBRACKET
@@ -140,8 +141,13 @@ Exp : NUM            { Constant (IntVal (fst $1), snd $1) }
                      { Reduce ($3, $5, $7, (), $1) }
     | REPLICATE LPAR Exp COMMA Exp RPAR
                      { Replicate ($3, $5, (), $1) }
+
+    | FILTER LPAR FunArg COMMA Exp RPAR
+                     { Filter ($3, $5, (), $1) }
+
     | SCAN LPAR FunArg COMMA Exp COMMA Exp RPAR
                      { Scan ($3, $5, $7, (), $1) }
+
     | LPAR Exp RPAR  { $2 }
     // TODO: task 1(b): replace this with a more general production
     | LET LetDecs IN Exp

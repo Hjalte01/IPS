@@ -1,0 +1,16 @@
+fun bool isEven(int x) = 
+    if x == 0 then
+        true
+    else if x == 1 then
+        false
+    else
+        isEven(x - 2)
+
+fun int writeInt(int x) = write(x)
+
+fun [int] writeIntArray([int] x) = map(writeInt, x)
+
+fun [int] main() = 
+    let nums = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10} in
+    let evenNums = filter(isEven, nums) in
+    writeIntArray(evenNums)
