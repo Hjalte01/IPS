@@ -660,7 +660,7 @@ let rec compileExp  (e      : TypedExp)
       let res_reg       = newReg "res_reg"
       let addr_reg      = newReg "addr_reg"
       let i_reg         = newReg "i_reg"
-      let res_arg       = newReg "res_arg"
+      let result_count  = newReg "result_count"
       let counter_reg   = newReg "counter_reg"
       let tmp_reg       = newReg "tmp_reg"
       let tmp_reg2      = newReg "tmp_reg2"
@@ -669,7 +669,7 @@ let rec compileExp  (e      : TypedExp)
       let get_size      =   [ LW (size_reg, arr_reg, 0);  ]
 
       let init_regs     =   [ ADDI (addr_reg, place, 4);
-                              ADDI (res_arg, place, 0);
+                              ADDI (result_count, place, 0);
                               MV (i_reg, Rzero);
                               MV (counter_reg, Rzero);
                               ADDI (elem_reg, arr_reg, 4) ]
@@ -696,7 +696,7 @@ let rec compileExp  (e      : TypedExp)
                             ADDI (i_reg, i_reg, 1);
                             J loop_beg;
                             LABEL (loop_end);
-                            SW (counter_reg, res_arg, 0)  ]
+                            SW (counter_reg, result_count, 0)  ]
 
       arr_code
         @ get_size
