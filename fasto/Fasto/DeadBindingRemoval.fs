@@ -149,7 +149,7 @@ let rec removeDeadBindingsInExp (e : TypedExp) : (bool * DBRtab * TypedExp) =
             *)
             let (ios1, uses1, exp1) = removeDeadBindingsInExp body
             let (ios2, uses2, exp2) = removeDeadBindingsInExp e
-            if (isUsed name uses1 && isUsed name uses2) || ios2 then
+            if (isUsed name uses1) || ios2 then
                 (ios2 || ios1, 
                 SymTab.combine (SymTab.remove name uses1) uses2, 
                 Let(Dec(name, exp2, decpos), exp1, pos))

@@ -266,7 +266,7 @@ let rec compileExp  (e      : TypedExp)
   | Not (e, _) ->
       let t = newReg "not"
       let code = compileExp e vtable t
-      code @ [XORI (place, t, 1)]
+      code @ [XORI (place, t, -1)]
 
   | Negate (e1, pos) ->
       let t1 = newReg "negate" 
