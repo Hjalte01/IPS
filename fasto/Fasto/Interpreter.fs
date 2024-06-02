@@ -294,11 +294,11 @@ let rec evalExp (e : UntypedExp, vtab : VarTable, ftab : FunTable) : Value =
         match n_val with
           | IntVal(n) -> 
               if n < 0 then
-                raise (MyError("1st argument of \"scan\"", pos))
+                raise (MyError(sprintf "Argument of \"replicate\" is negative: %i" n, pos))
               ArrayVal(
                 [for _ in 0..(n-1) -> evalExp(exp, vtab, ftab)], 
                 valueType(evalExp(exp, vtab, ftab)))
-          | _ -> reportWrongType "1st argument of \"scan\"" Int n_val (expPos n_exp)
+          | _ -> reportWrongType "1st argument of \"replicate\"" Int n_val (expPos n_exp)
 
 
   (* TODO project task 2: `filter(p, arr)`
@@ -328,8 +328,22 @@ let rec evalExp (e : UntypedExp, vtab : VarTable, ftab : FunTable) : Value =
      Implementation similar to reduce, except that it produces an array
      of the same type and length to the input array `arr`.
   *)
-  | Scan (_, _, _, _, _) ->
-        failwith "Unimplemented interpretation of scan"
+  | Scan (farg, ne, arrexp, tp, pos) ->
+        let farg_ret_type = rtpFunArg farg ftab pos
+        let arr  = evalExp(arrexp, vtab, ftab)
+        let nel  = evalExp(ne, vtab, ftab)
+        match arr with
+          | ArrayVal (lst,tp1) ->
+              let intermediate_results, _ = 
+                  // Here res holds the result and acc hold the accumalator, whilce x is the next element in the list
+                  List.fold (fun (res, acc) x ->
+                      // The function farg gets evaluated with acc and x as arguments
+                      let new_acc = evalFunArg (farg, vtab, ftab, pos, [acc; x])
+                      (res @ [new_acc], new_acc)
+                  ) ([], nel) lst
+              ArrayVal (intermediate_results, farg_ret_type)
+          | otherwise -> reportNonArray "3rd argument of \"scan\"" arr pos
+
 
   | Read (t,p) ->
         let str = Console.ReadLine()

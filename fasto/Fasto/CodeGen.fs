@@ -248,12 +248,19 @@ let rec compileExp  (e      : TypedExp)
       let code2 = compileExp e2 vtable t2
       code1 @ code2 @ [MUL (place,t1,t2)]
 
-  | Divide (e1, e2, _) ->
+  | Divide (e1, e2, (line, _)) ->
       let t1 = newReg "div_L"
       let t2 = newReg "div_R"
       let code1 = compileExp e1 vtable t1
       let code2 = compileExp e2 vtable t2
-      code1 @ code2 @ [DIV (place,t1,t2)]
+      let safe_lab = newLab "safe"
+      let check_zero = [BNE (t2, Rzero, safe_lab)
+                ; LI (Ra0, line)
+                ; LA (Ra1, "m.DivZero")
+                ; J "p.RuntimeError"
+                ; LABEL (safe_lab)
+                ]
+      code1 @ code2 @ check_zero @ [DIV (place,t1,t2)]
 
 
   | Not (e, _) ->
@@ -714,8 +721,65 @@ let rec compileExp  (e      : TypedExp)
         the current location of the result iterator at every iteration of
         the loop.
   *)
-  | Scan (_, _, _, _, _) ->
-      failwith "Unimplemented code generation of scan"
+  | Scan (binop, acc_exp, arr_exp, tp, pos) ->
+      let arr_reg  = newReg "arr"   (* address of array *)
+      let acc_reg  = newReg "acc"   (* address of accumulator *)
+      let res_reg = newReg "res" (* address of result array *)
+      let size_reg = newReg "size"  (* size of input array *)
+      let i_reg    = newReg "ind_var"   (* loop counter *)
+      let tmp_reg  = newReg "tmp"   (* several purposes *)
+      let loop_beg = newLab "loop_beg"
+      let loop_end = newLab "loop_end"      
+      let elem_size = getElemSize tp
+
+
+      (* Here the risc-v code starts*)
+      let header1 = 
+        compileExp arr_exp vtable arr_reg // arr_reg = compiled(arr_exp)
+        @ compileExp acc_exp vtable acc_reg // acc_reg = compiled(acc_exp)
+        @ 
+        [
+          LW(size_reg, arr_reg, 0);  // size_reg = *arr
+        ]
+        @ dynalloc(size_reg, place, tp) // allocate space for the result array
+        @
+        [ 
+          ADDI (res_reg, place, 4); // res_reg = place + 4
+          // SW(size_reg, res_reg, 0); // I don't think it's needed to say how big the array is
+          MV (i_reg, Rzero); // i_reg = 0
+
+          ADDI (arr_reg, arr_reg, 4); // arr_reg = arr_reg + 4
+        ]
+
+      (* Load code *)
+      let loop_code =
+        [
+          LABEL (loop_beg); // loop_beg
+          BGE (i_reg, size_reg, loop_end) // if i >= size_reg, jump to loop_end
+        ]
+        @
+        [ Load elem_size (tmp_reg, arr_reg, 0) // tmp = *arr
+        ]
+        @ applyFunArg(binop, [acc_reg; tmp_reg], vtable, acc_reg, pos) // acc = f(acc, tmp)
+        @ 
+        [ Store elem_size (acc_reg, res_reg, 0); // *res = acc
+          ADDI (res_reg, res_reg, elemSizeToInt elem_size); // res++
+          ADDI (arr_reg, arr_reg, elemSizeToInt elem_size); // arr++
+        ] 
+        @ 
+        [ ADDI(i_reg, i_reg, 1); // i++
+          J loop_beg; // jump to loop_beg
+          LABEL loop_end; // loop_end
+        ]
+
+
+      
+      header1  
+      @ loop_code 
+         
+
+
+
 
 and applyFunArg ( ff     : TypedFunArg
                 , args   : reg list

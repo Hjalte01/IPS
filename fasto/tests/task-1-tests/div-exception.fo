@@ -1,0 +1,3 @@
+fun int main() =
+    let foo = 1/'a' in
+    0
