@@ -1,10 +1,8 @@
 fun [char] write_str([char] x) = write(x)
 fun [[char]] write_str_arr([[char]] xs) = map(write_str, xs)
-fun [[[char]]] write_str_arr2([[[char]]] xss) = map(write_str_arr, xss) 
 
 fun char write_char(char x) = write(x)
 fun [char] write_char_arr([char] xs) = map(write_char, xs) 
-fun [[char]] write_char_arr2([[char]] xss) = map(write_char_arr, xss) 
 
 fun bool write_bool(bool x) = write(x)
 fun [bool] write_bool_arr([bool] xs) = map(write_bool, xs)
@@ -20,26 +18,6 @@ fun char first_char(char a, char b) = a
 fun char second_char(char a, char b) = b
 fun [char] first_str([char] a, [char] b) = a
 fun [char] second_str([char] a, [char] b) = b
-
-// not working as in F# since scan in fasto dosen't have an initial value and
-// the type of the initial accumalator has to be the same as the return type of the function
-// note scan is implemented like reduce, meaning reduce has the same folding implementation
-fun [char] concat_char([char] a, char b) = {a[0], b}
-fun [[char]] concat_str([[char]] a, [char] b) = {a[0], b}
-// where the initial accumilator is a char instead of have to keep it as a char array,
-// when the return type is char array. Intended method in F# would be like:
-//   fun [char] concat_char(char a, char b) = {a, b}
-//   fun [[char]] concat([char] a, [char] b) = {a, b}
-// where the calls would be like
-//   let h = write_char_arr2(scan(concat_char, 'a', {'a', 'b', 'c'})) in
-//   let i = write_str_arr2(scan(concat_str, "good ", {"life", "day", "time"})) in
-
-// I'm not sure if this is intended or not, like scan dosen't keep the initial value
-// likewise for reduce following would work, in interpreter and not in codegen fase:
-//   let j = write_str_arr(reduce(concat_str, {"good "}, {"life", "day", "time"})) in
-// and this wont work for both interperter and codegen fase
-//   let j = write_str_arr(reduce(concat_str, "good ", {"life", "day", "time"})) in
-
 
 
 fun int main() =
