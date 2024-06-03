@@ -35,9 +35,12 @@
 
 set -e # Die on first error.
 
-base_dir="$(dirname "$0")"
-fasto="$base_dir/../bin/fasto.sh"
-rars="$base_dir/../bin/rars.sh"
+# base_dir="$(dirname "$0")"
+base_dir="$PWD"
+# fasto="$base_dir/../bin/fasto.sh"
+fasto="$base_dir/bin/fasto.sh"
+# rars="$base_dir/../bin/rars.sh"
+rars="$base_dir/bin/rars.sh"
 
 # Determine fasto command-line flags.
 if [ "$1" = -o ]; then
@@ -53,7 +56,8 @@ fi
 # Find the directory containing the test programs.
 tests_dir="$1"
 if ! [ "$tests_dir" ]; then
-    tests_dir="$base_dir/../tests"
+    # tests_dir="$base_dir/../tests"
+    tests_dir="$base_dir/tests"
 fi
 tests_dir="$(echo "$tests_dir" | sed 's/\/*$//')"
 
