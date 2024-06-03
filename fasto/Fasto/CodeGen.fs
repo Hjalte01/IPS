@@ -745,9 +745,7 @@ let rec compileExp  (e      : TypedExp)
         @
         [ 
           ADDI (res_reg, place, 4); // res_reg = place + 4
-          // SW(size_reg, res_reg, 0); // I don't think it's needed to say how big the array is
           MV (i_reg, Rzero); // i_reg = 0
-
           ADDI (arr_reg, arr_reg, 4); // arr_reg = arr_reg + 4
         ]
 

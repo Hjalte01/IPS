@@ -328,6 +328,7 @@ let rec evalExp (e : UntypedExp, vtab : VarTable, ftab : FunTable) : Value =
      Implementation similar to reduce, except that it produces an array
      of the same type and length to the input array `arr`.
   *)
+  // same as reduce, just that acc is a tuple combined of accumilator and the result
   | Scan (farg, ne, arrexp, tp, pos) ->
         let farg_ret_type = rtpFunArg farg ftab pos
         let arr  = evalExp(arrexp, vtab, ftab)
@@ -335,9 +336,7 @@ let rec evalExp (e : UntypedExp, vtab : VarTable, ftab : FunTable) : Value =
         match arr with
           | ArrayVal (lst,tp1) ->
               let intermediate_results, _ = 
-                  // Here res holds the result and acc hold the accumalator, whilce x is the next element in the list
                   List.fold (fun (res, acc) x ->
-                      // The function farg gets evaluated with acc and x as arguments
                       let new_acc = evalFunArg (farg, vtab, ftab, pos, [acc; x])
                       (res @ [new_acc], new_acc)
                   ) ([], nel) lst
