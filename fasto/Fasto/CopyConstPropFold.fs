@@ -52,7 +52,9 @@ let rec copyConstPropFoldExp (vtable : VarTable)
                               associating `x` with a variable-propagatee binding,
                               and optimize the `body` of the let.
                     *)
-                    copyConstPropFoldExp (SymTab.bind name (VarProp og_var) vtable) body
+                    // copyConstPropFoldExp (SymTab.bind name (VarProp og_var) vtable) body
+                    let body' = copyConstPropFoldExp (SymTab.bind name (VarProp og_var) vtable) body
+                    Let (Dec (name, ed', decpos), body', pos)
                 | Constant (const_v, pos) ->
                     (* TODO project task 3:
                         Hint: I have discovered a constant-copy statement `let x = 5`.
@@ -60,8 +62,10 @@ let rec copyConstPropFoldExp (vtable : VarTable)
                               associating `x` with a constant-propagatee binding,
                               and optimize the `body` of the let.
                     *)
-                    copyConstPropFoldExp (SymTab.bind name (ConstProp const_v) vtable) body
-                | Let (Dec (name2, e2, decpos2), inner_body, pos2) ->
+                    // copyConstPropFoldExp (SymTab.bind name (ConstProp const_v) vtable) body
+                    let body' = copyConstPropFoldExp (SymTab.bind name (ConstProp const_v) vtable) body
+                    Let (Dec (name, ed', decpos), body', pos)
+                | Let (Dec (name', ed'', decpos'), body', pos') ->
                     (* TODO project task 3:
                         Hint: this has the structure
                                 `let y = (let x = e1 in e2) in e3`
@@ -73,14 +77,11 @@ let rec copyConstPropFoldExp (vtable : VarTable)
                         restructured, semantically-equivalent expression:
                                 `let x = e1 in let y = e2 in e3`
                     *)
-                    copyConstPropFoldExp vtable (Let (Dec (name2, e2, decpos),
-                                                     Let (Dec (name, inner_body, decpos2),
-                                                          body,
-                                                          pos2),
-                                                     pos))
+ 
+                    copyConstPropFoldExp vtable  (Let (Dec (name', ed'', decpos'), (Let (Dec (name, body', decpos), body, pos')), pos))
                 | _ -> (* Fallthrough - for everything else, do nothing *)
-                    let body' = copyConstPropFoldExp vtable body in
-                    Let (Dec (name, ed', decpos), body', pos)
+                    // let body' = copyConstPropFoldExp vtable body in
+                    Let (Dec (name, ed', decpos), body, pos)
 
         | Times (e1, e2, pos) ->
             (* TODO project task 3: implement as many safe algebraic
