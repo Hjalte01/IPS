@@ -72,17 +72,9 @@ let keyword (s, pos) =
        | "read"         -> Parser.READ pos
        | "write"        -> Parser.WRITE pos
        | "replicate"    -> Parser.REPLICATE pos
-
        | "filter"       -> Parser.FILTER pos
        | "scan"         -> Parser.SCAN pos
        | _              -> Parser.ID (s, pos)
-
-let bool_lit (s: string, pos) =
-  match bool.TryParse s with
-    | (true, flag) -> Parser.BOOLLIT (flag, pos)
-    // bool literals only matches true and false, so technically we could use bool.Parse().
-    // As a consequence this branch will never execute.
-    | _ -> failwith "never"
 }
 
 rule Token = parse
@@ -97,8 +89,8 @@ rule Token = parse
                                   ( int (Encoding.UTF8.GetString(lexbuf.Lexeme))
                                   , getPos lexbuf )
                               }
-  | "true" | "false"      { bool_lit (
-                              Encoding.UTF8.GetString(lexbuf.Lexeme), 
+  | "true" | "false"      { Parser.BOOLLIT (
+                              bool.Parse(Encoding.UTF8.GetString(lexbuf.Lexeme)), 
                               getPos lexbuf) }
   
   | ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']*

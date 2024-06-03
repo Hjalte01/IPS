@@ -78,10 +78,10 @@ let rec copyConstPropFoldExp (vtable : VarTable)
                                 `let x = e1 in let y = e2 in e3`
                     *)
  
-                    copyConstPropFoldExp vtable  (Let (Dec (name', ed'', decpos'), (Let (Dec (name, body', decpos), body, pos')), pos))
+                    copyConstPropFoldExp vtable (Let (Dec (name', ed'', decpos'), (Let (Dec (name, body', decpos), body, pos')), pos))
                 | _ -> (* Fallthrough - for everything else, do nothing *)
-                    // let body' = copyConstPropFoldExp vtable body in
-                    Let (Dec (name, ed', decpos), body, pos)
+                    let body' = copyConstPropFoldExp vtable body in
+                    Let (Dec (name, ed', decpos), body', pos)
 
         | Times (e1, e2, pos) ->
             (* TODO project task 3: implement as many safe algebraic

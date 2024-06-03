@@ -69,7 +69,6 @@ let rec removeDeadBindingsInExp (e : TypedExp) : (bool * DBRtab * TypedExp) =
                   - 3rd element of the tuple: should be the optimised expression.
             *)
             (false, recordUse name (SymTab.empty()), Var (name, pos))
-            // failwith "Unimplemented removeDeadBindingsInExp for Var"
         | Plus (x, y, pos) ->
             let (xios, xuses, x') = removeDeadBindingsInExp x
             let (yios, yuses, y') = removeDeadBindingsInExp y
@@ -121,8 +120,6 @@ let rec removeDeadBindingsInExp (e : TypedExp) : (bool * DBRtab * TypedExp) =
             *)
             let (ios, uses, exp') = removeDeadBindingsInExp e
             (false || ios, SymTab.combine (recordUse name (SymTab.empty())) uses, Index(name, exp', t, pos))
-            // failwith "Unimplemented removeDeadBindingsInExp for Index"
-
         | Let (Dec (name, e, decpos), body, pos) ->
             (* Task 3, Hints for the `Let` case:
                   - recursively process the `e` and `body` subexpressions
@@ -157,7 +154,6 @@ let rec removeDeadBindingsInExp (e : TypedExp) : (bool * DBRtab * TypedExp) =
                 let (ios1, uses1, exp1) = removeDeadBindingsInExp body
 
                 (ios1, uses1, exp1)
-                // failwith "Unimplemented removeDeadBindingsInExp for Let"
         | Iota (e, pos) ->
             let (io, uses, e') = removeDeadBindingsInExp e
             (io,
