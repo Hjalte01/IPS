@@ -1,3 +1,2 @@
-fun int main() =
-    let n = replicate(~1, 1) in
-    0
+fun [int] main() =
+    replicate(~1, 1)
