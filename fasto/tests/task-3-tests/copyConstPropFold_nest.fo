@@ -1,0 +1,7 @@
+fun int main() =
+  let len = 40 in
+  let array = iota(len) in
+  let index = len / 8 in
+  let x = array[index] in
+  let y = let z = x * 2 in z + 3 in
+  write(y)
