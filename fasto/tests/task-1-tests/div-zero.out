@@ -1,1 +1,1 @@
-Runtime error at line 4: division by zero
+Interpreter error: Attempt to divide by 0 at line 4, column 13

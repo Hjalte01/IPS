@@ -1,1 +1,1 @@
-Runtime error at line 2: negative array size
+Interpreter error: Argument of "replicate" is negative: -1 at line 2, column 5
